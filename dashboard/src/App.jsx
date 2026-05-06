@@ -6,7 +6,7 @@ import ChartPanel from "./components/ChartPanel";
 const CAPACIDAD = 20;
 
 // 🔌 Cambia la IP y puerto por donde corre tu FastAPI
-const API_URL = "https://friendly-pancake-5g7gr5wx9qxvh4j4q-8000.app.github.dev/ultimo";
+const API_URL = "https://localhost:8000";
 
 export default function App() {
   const [data, setData]       = useState([]);
