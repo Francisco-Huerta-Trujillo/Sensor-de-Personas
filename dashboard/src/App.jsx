@@ -21,46 +21,89 @@ function App() {
     setData(prev => [
       ...prev,
       {
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toLocaleTimeString("es-MX", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        }),
         personas: json.people_count
       }
     ].slice(-30));
   };
 
   useEffect(() => {
+    fetchData();
     const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Análisis de Comportamiento en Espacio</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Análisis de Espacio</h1>
+        <div style={styles.liveBadge}>
+          <div style={styles.liveDot} />
+          En vivo · cada 2s
+        </div>
+      </div>
 
-      <div style={styles.grid}>
+      <div style={styles.topGrid}>
         <StatusCard current={current} capacidad={capacidad} />
         <InsightsPanel data={data} capacidad={capacidad} />
-        <ChartPanel data={data} />
       </div>
+
+      <ChartPanel data={data} capacidad={capacidad} />
     </div>
   );
 }
 
 const styles = {
   container: {
-    background: "#cfd9f0",
-    color: "white",
+    background: "#0a1628",
+    color: "#f1f5f9",
     minHeight: "100vh",
-    padding: "20px",
-    fontFamily: "sans-serif"
+    padding: "28px",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "24px",
   },
   title: {
-    marginBottom: "20px"
+    fontFamily: "'Syne', sans-serif",
+    fontSize: "22px",
+    fontWeight: 800,
+    letterSpacing: "-0.5px",
+    color: "#f1f5f9",
+    margin: 0,
   },
-  grid: {
+  liveBadge: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontSize: "12px",
+    fontWeight: 500,
+    color: "#00e5a0",
+    background: "rgba(0,229,160,0.1)",
+    border: "1px solid rgba(0,229,160,0.25)",
+    padding: "4px 14px",
+    borderRadius: "99px",
+  },
+  liveDot: {
+    width: "7px",
+    height: "7px",
+    borderRadius: "50%",
+    background: "#00e5a0",
+    animation: "pulse 1.4s ease-in-out infinite",
+  },
+  topGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "20px"
-  }
+    gap: "14px",
+    marginBottom: "14px",
+  },
 };
 
 export default App;
