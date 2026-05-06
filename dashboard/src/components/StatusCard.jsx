@@ -1,124 +1,88 @@
 import React from "react";
 
-function StatusCard({ current, capacidad }) {
-  const ocupacion = current / capacidad;
-
-  const getColor = (ocu) => {
-    if (ocu < 0.5) return "#00e5a0";
-    if (ocu < 0.8) return "#fbbf24";
-    return "#ff6b6b";
-  };
-
-  const getEstado = (ocu) => {
-    if (ocu < 0.5) return {
-      text: "🟢 Normal",
-      bg: "rgba(0,229,160,0.08)",
-      border: "rgba(0,229,160,0.25)",
-    };
-    if (ocu < 0.8) return {
-      text: "🟡 Precaución",
-      bg: "rgba(251,191,36,0.08)",
-      border: "rgba(251,191,36,0.25)",
-    };
-    return {
-      text: "🔴 Riesgo alto",
-      bg: "rgba(255,107,107,0.08)",
-      border: "rgba(255,107,107,0.25)",
-    };
-  };
-
-  const color = getColor(ocupacion);
-  const estado = getEstado(ocupacion);
-  const pct = Math.round(ocupacion * 100);
-
-  return (
-    <div style={{ ...card, borderColor: estado.border, background: estado.bg, borderTopColor: color }}>
-      <div style={styles.label}>Estado del sistema</div>
-
-      <div style={{ ...styles.estadoText }}>{estado.text}</div>
-
-      <div style={styles.row}>
-        <div style={styles.metaBlock}>
-          <span style={styles.metaLabel}>Personas</span>
-          <span style={{ ...styles.metaValue, color }}>{current}</span>
-        </div>
-        <div style={styles.metaBlock}>
-          <span style={styles.metaLabel}>Capacidad</span>
-          <span style={styles.metaValue}>{capacidad}</span>
-        </div>
-        <div style={styles.metaBlock}>
-          <span style={styles.metaLabel}>Ocupación</span>
-          <span style={{ ...styles.metaValue, color }}>{pct}%</span>
-        </div>
-      </div>
-
-      <div style={styles.barBg}>
-        <div style={{
-          ...styles.barFill,
-          width: `${pct}%`,
-          background: color,
-        }} />
-      </div>
-    </div>
-  );
+function getColor(ocu) {
+  if (ocu < 0.5) return "#059669";
+  if (ocu < 0.8) return "#d97706";
+  return "#dc2626";
 }
 
-const card = {
-  background: "#1e293b",
-  padding: "20px 22px",
-  borderRadius: "14px",
-  border: "1px solid rgba(255,255,255,0.06)",
-  borderTop: "3px solid",
-  transition: "border-color 0.4s, background 0.4s",
+function getEstado(ocu) {
+  if (ocu < 0.5) return { text: "🟢 Normal",     bg: "#f0fdf4", border: "#bbf7d0" };
+  if (ocu < 0.8) return { text: "🟡 Precaución", bg: "#fffbeb", border: "#fde68a" };
+  return           { text: "🔴 Riesgo alto",  bg: "#fef2f2", border: "#fecaca" };
+}
+
+const cardBase = {
+  background: "#ffffff",
+  borderRadius: 14,
+  border: "1px solid #e2e8f0",
+  padding: "18px 20px",
+  boxSizing: "border-box",
+  minWidth: 0,
+  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
 };
 
-const styles = {
-  label: {
-    fontSize: "11px",
-    fontWeight: 500,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    color: "#94a3b8",
-    marginBottom: "14px",
-  },
-  estadoText: {
-    fontFamily: "'Syne', sans-serif",
-    fontSize: "22px",
-    fontWeight: 800,
-    color: "#f1f5f9",
-    marginBottom: "18px",
-  },
-  row: {
-    display: "flex",
-    gap: "20px",
-    marginBottom: "14px",
-  },
-  metaBlock: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
-  metaLabel: {
-    fontSize: "11px",
-    color: "#64748b",
-  },
-  metaValue: {
-    fontSize: "18px",
-    fontWeight: 700,
-    fontFamily: "'Syne', sans-serif",
-    color: "#f1f5f9",
-  },
-  barBg: {
-    height: "6px",
-    background: "rgba(255,255,255,0.08)",
-    borderRadius: "99px",
-    overflow: "hidden",
-  },
-  barFill: {
-    height: "100%",
-    borderRadius: "99px",
-    transition: "width 0.6s cubic-bezier(0.4,0,0.2,1), background 0.4s",
-  },
+const labelStyle = {
+  fontSize: 10, fontWeight: 600,
+  letterSpacing: "0.09em", textTransform: "uppercase",
+  color: "#94a3b8", marginBottom: 10,
 };
 
-export default StatusCard;
+export default function StatusCard({ current, capacidad, delta, prevVal }) {
+  const ocu    = current / capacidad;
+  const color  = getColor(ocu);
+  const estado = getEstado(ocu);
+
+  const DeltaLabel = () => {
+    if (prevVal === null) return <span>—</span>;
+    if (delta > 0) return <span style={{ color: "#dc2626" }}>▲ +{delta} vs anterior</span>;
+    if (delta < 0) return <span style={{ color: "#059669" }}>▼ {delta} vs anterior</span>;
+    return <span style={{ color: "#94a3b8" }}>Sin cambio</span>;
+  };
+
+  return (
+    <>
+      {/* Card 1: Personas ahora */}
+      <div style={{ ...cardBase, borderTop: `3px solid ${color}` }}>
+        <div style={labelStyle}>Personas ahora</div>
+        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, lineHeight: 1, color }}>
+          {current}
+        </div>
+        <div style={{ fontSize: 12, color: "#64748b", marginTop: 8 }}>
+          <DeltaLabel />
+        </div>
+      </div>
+
+      {/* Card 2: Ocupación */}
+      <div style={{ ...cardBase, borderTop: `3px solid ${color}` }}>
+        <div style={labelStyle}>Ocupación</div>
+        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 48, fontWeight: 800, lineHeight: 1, color }}>
+          {Math.round(ocu * 100)}%
+        </div>
+        <div style={{ height: 5, background: "#e2e8f0", borderRadius: 99, overflow: "hidden", marginTop: 14 }}>
+          <div style={{
+            height: "100%", borderRadius: 99, background: color,
+            width: `${Math.round(ocu * 100)}%`,
+            transition: "width .6s cubic-bezier(.4,0,.2,1), background .4s"
+          }} />
+        </div>
+      </div>
+
+      {/* Card 3: Estado */}
+      <div style={{ ...cardBase, borderTop: `3px solid ${color}`, background: estado.bg, borderColor: estado.border }}>
+        <div style={labelStyle}>Estado</div>
+        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>
+          {estado.text}
+        </div>
+        <div style={{ display: "flex", gap: 20 }}>
+          {[["Personas", current], ["Capacidad", capacidad]].map(([l, v]) => (
+            <div key={l}>
+              <div style={{ fontSize: 10, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{l}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#0f172a" }}>{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,189 +1,103 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, ReferenceLine, CartesianGrid
 } from "recharts";
 
-function ChartPanel({ data, capacidad }) {
-  const getColor = (ocu) => {
-    if (ocu < 0.5) return "#00e5a0";
-    if (ocu < 0.8) return "#fbbf24";
-    return "#ff6b6b";
-  };
+function getColor(ocu) {
+  if (ocu < 0.5) return "#059669";
+  if (ocu < 0.8) return "#d97706";
+  return "#dc2626";
+}
 
-  const last = data.length > 0 ? data[data.length - 1].personas : 0;
-  const lineColor = getColor(last / capacidad);
-
-  const recent = data.slice(-20);
-  const maxVal = recent.length > 0 ? Math.max(...recent.map(d => d.personas)) : 0;
-  const minVal = recent.length > 0 ? Math.min(...recent.map(d => d.personas)) : 0;
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={styles.tooltip}>
-          <div style={styles.tooltipTime}>{label}</div>
-          <div style={{ ...styles.tooltipVal, color: lineColor }}>
-            {payload[0].value} personas
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
+function CustomTooltip({ active, payload, label, color }) {
+  if (!active || !payload?.length) return null;
   return (
-    <div style={card}>
-      <div style={styles.header}>
-        <div style={styles.label}>Tendencia — últimas 30 lecturas</div>
-        <div style={styles.legend}>
-          <span style={{ ...styles.legendDot, background: lineColor }} />
-          <span style={styles.legendText}>Personas en tiempo real</span>
-        </div>
-      </div>
-
-      <div style={styles.miniStats}>
-        <div style={styles.miniStat}>
-          <span style={styles.miniLabel}>Mín</span>
-          <span style={{ ...styles.miniVal, color: "#00e5a0" }}>{minVal}</span>
-        </div>
-        <div style={styles.miniStat}>
-          <span style={styles.miniLabel}>Máx</span>
-          <span style={{ ...styles.miniVal, color: "#ff6b6b" }}>{maxVal}</span>
-        </div>
-        <div style={styles.miniStat}>
-          <span style={styles.miniLabel}>Aforo</span>
-          <span style={styles.miniVal}>{capacidad}</span>
-        </div>
-      </div>
-
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-          <XAxis
-            dataKey="time"
-            tick={{ fill: "#64748b", fontSize: 10 }}
-            tickLine={false}
-            axisLine={false}
-            interval="preserveStartEnd"
-          />
-          <YAxis
-            domain={[0, capacidad]}
-            tick={{ fill: "#64748b", fontSize: 10 }}
-            tickLine={false}
-            axisLine={false}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine
-            y={capacidad * 0.8}
-            stroke="#ff6b6b"
-            strokeDasharray="4 4"
-            strokeOpacity={0.4}
-          />
-          <Line
-            type="monotone"
-            dataKey="personas"
-            stroke={lineColor}
-            strokeWidth={2}
-            dot={false}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-
-      <div style={styles.refNote}>
-        <span style={styles.refDash} /> Umbral de precaución (80%)
-      </div>
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+      <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color }}>{payload[0].value} personas</div>
     </div>
   );
 }
 
-const card = {
-  background: "#1e293b",
-  padding: "20px 22px 16px",
-  borderRadius: "14px",
-  border: "1px solid rgba(255,255,255,0.06)",
+const cardBase = {
+  background: "#ffffff",
+  borderRadius: 14,
+  border: "1px solid #e2e8f0",
+  padding: "18px 20px",
+  boxSizing: "border-box",
+  minWidth: 0,
+  display: "flex",
+  flexDirection: "column",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
 };
 
-const styles = {
-  header: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "12px",
-  },
-  label: {
-    fontSize: "11px",
-    fontWeight: 500,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    color: "#94a3b8",
-  },
-  legend: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
-  legendDot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    display: "inline-block",
-  },
-  legendText: {
-    fontSize: "11px",
-    color: "#64748b",
-  },
-  miniStats: {
-    display: "flex",
-    gap: "20px",
-    marginBottom: "16px",
-  },
-  miniStat: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
-  miniLabel: {
-    fontSize: "10px",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: "0.06em",
-  },
-  miniVal: {
-    fontSize: "16px",
-    fontWeight: 700,
-    fontFamily: "'Syne', sans-serif",
-    color: "#f1f5f9",
-  },
-  tooltip: {
-    background: "#0f172a",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "8px",
-    padding: "8px 12px",
-  },
-  tooltipTime: {
-    fontSize: "11px",
-    color: "#64748b",
-    marginBottom: "2px",
-  },
-  tooltipVal: {
-    fontSize: "14px",
-    fontWeight: 600,
-  },
-  refNote: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    fontSize: "11px",
-    color: "#64748b",
-    marginTop: "8px",
-  },
-  refDash: {
-    display: "inline-block",
-    width: "18px",
-    borderTop: "2px dashed rgba(255,107,107,0.5)",
-  },
+const labelStyle = {
+  fontSize: 10, fontWeight: 600,
+  letterSpacing: "0.09em", textTransform: "uppercase",
+  color: "#94a3b8", marginBottom: 10,
 };
 
-export default ChartPanel;
+export default function ChartPanel({ data, capacidad, current }) {
+  const ocu    = current / capacidad;
+  const color  = getColor(ocu);
+  const recent = data.slice(-20);
+  const maxVal = recent.length ? Math.max(...recent.map(d => d.personas)) : 0;
+  const minVal = recent.length ? Math.min(...recent.map(d => d.personas)) : 0;
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, minHeight: 0 }}>
+
+      {/* Card 5: Historial reciente */}
+      <div style={cardBase}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={labelStyle}>Historial reciente</div>
+          <div style={{ display: "flex", gap: 14, fontSize: 11, color: "#94a3b8" }}>
+            <span>Mín <strong style={{ color: "#059669", fontFamily: "'Outfit', sans-serif" }}>{minVal}</strong></span>
+            <span>Máx <strong style={{ color: "#dc2626", fontFamily: "'Outfit', sans-serif" }}>{maxVal}</strong></span>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 3, flex: 1 }}>
+          {recent.map((d, i) => (
+            <div key={i} style={{
+              flex: 1,
+              height: `${Math.max(4, Math.round((d.personas / capacidad) * 100))}%`,
+              borderRadius: "3px 3px 0 0",
+              background: getColor(d.personas / capacidad),
+              opacity: 0.7,
+              transition: "height .4s ease",
+            }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Card 6: Tendencia */}
+      <div style={cardBase}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={labelStyle}>Tendencia — últimas 30 lecturas</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#94a3b8" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block" }} />
+            Personas en tiempo real
+          </div>
+        </div>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="time" tick={{ fill: "#cbd5e1", fontSize: 9 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis domain={[0, capacidad]} tick={{ fill: "#cbd5e1", fontSize: 9 }} tickLine={false} axisLine={false} />
+              <Tooltip content={<CustomTooltip color={color} />} />
+              <ReferenceLine y={capacidad * 0.8} stroke="#dc2626" strokeDasharray="4 4" strokeOpacity={0.35} />
+              <Line type="monotone" dataKey="personas" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#94a3b8", marginTop: 6 }}>
+          <span style={{ display: "inline-block", width: 18, borderTop: "2px dashed rgba(220,38,38,0.4)" }} />
+          Umbral de precaución (80%)
+        </div>
+      </div>
+
+    </div>
+  );
+}
