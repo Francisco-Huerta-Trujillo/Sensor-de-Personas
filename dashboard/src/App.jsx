@@ -5,8 +5,8 @@ import ChartPanel from "./components/ChartPanel";
 
 const CAPACIDAD = 20;
 
-// 🔌 Cambia esta URL por la de tu sensor
-const API_URL = "http://TU_IP:TU_PUERTO/endpoint";
+// 🔌 Cambia la IP y puerto por donde corre tu FastAPI
+const API_URL = "http://localhost:8000/ultimo";
 
 export default function App() {
   const [data, setData]       = useState([]);
@@ -16,14 +16,13 @@ export default function App() {
   useEffect(() => {
     const tick = async () => {
       try {
-        const res  = await fetch(API_URL);
-
+        const res = await fetch(API_URL);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
 
-        // Lee people_count y timestamp de tu sensor
-        const count = json.people_count;
+        // Campos que devuelve tu FastAPI
+        const count = json.people_count_all ?? 0;
         const time  = new Date(json.timestamp).toLocaleTimeString("es-MX", {
           hour: "2-digit", minute: "2-digit", second: "2-digit"
         });
@@ -77,7 +76,6 @@ export default function App() {
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 
-            {/* Mensaje de error si falla el fetch */}
             {error && (
               <div style={{
                 fontSize: 12, color: "#dc2626",
@@ -100,7 +98,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* FILA SUPERIOR: 4 cards */}
+        {/* FILA SUPERIOR */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, minHeight: 0 }}>
           <StatusCard current={current} capacidad={CAPACIDAD} delta={delta} prevVal={prevVal} />
           <InsightsPanel data={data} capacidad={CAPACIDAD} />
