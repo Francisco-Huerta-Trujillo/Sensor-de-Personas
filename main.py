@@ -35,6 +35,14 @@ async def recibir_datos(request: Request):
         f"Hora real: {timestamp_real}"
     )
 
+    # Condicional: si people_count_all es diferente de 10, devolver JSON diferente
+    if people_count_all != 10:
+        return {
+            "status": "diferente",
+            "message": "Dato recibido diferente al esperado",
+            "received": data
+        }
+
     if people_count_all is not None:
         db = SessionLocal()
         nuevo_registro = RegistroPersonas(
@@ -70,6 +78,20 @@ def obtener_registros():
 # 🆕 Endpoint extra: solo el último registro (más eficiente para polling)
 @app.get("/ultimo")
 def obtener_ultimo():
+    db = SessionLocal()
+    registro = db.query(RegistroPersonas).order_by(RegistroPersonas.id.desc()).first()
+    db.close()
+    if not registro:
+        return {"people_count_all": 0, "timestamp": str(datetime.now())}
+    return {
+        "people_count_all": registro.people_count_all,
+        "people_count_max": registro.people_count_max,
+        "region_count":     registro.region_count,
+        "timestamp":        str(registro.timestamp)
+    }
+
+@app.get("/ultimoarduino")
+def obtener_ultimoarduino():
     db = SessionLocal()
     registro = db.query(RegistroPersonas).order_by(RegistroPersonas.id.desc()).first()
     db.close()
