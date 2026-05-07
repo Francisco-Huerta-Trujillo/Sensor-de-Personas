@@ -35,6 +35,14 @@ async def recibir_datos(request: Request):
         f"Hora real: {timestamp_real}"
     )
 
+    # Condicional: si people_count_all es diferente de 10, devolver JSON diferente
+    if people_count_all != 10:
+        return {
+            "status": "diferente",
+            "message": "Dato recibido diferente al esperado",
+            "received": data
+        }
+
     if people_count_all is not None:
         db = SessionLocal()
         nuevo_registro = RegistroPersonas(

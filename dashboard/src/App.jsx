@@ -6,7 +6,7 @@ import ChartPanel from "./components/ChartPanel";
 const CAPACIDAD = 20;
 
 // 🔌 Cambia la IP y puerto por donde corre tu FastAPI
-const API_URL = "https://localhost:8000";
+const API_URL = "http://localhost:8000";
 
 export default function App() {
   const [data, setData]       = useState([]);
@@ -16,7 +16,7 @@ export default function App() {
   useEffect(() => {
     const tick = async () => {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(`${API_URL}/ultimo`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
