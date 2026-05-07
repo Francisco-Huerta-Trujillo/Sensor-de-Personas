@@ -1,5 +1,4 @@
 import serial
-import requests
 import time
 
 # =========================================
@@ -9,14 +8,11 @@ import time
 # Puerto COM del Arduino
 ARDUINO_PORT = "COM5"
 
-# Velocidad serial (debe coincidir con Arduino)
+# Debe coincidir con Serial.begin()
 BAUD_RATE = 9600
 
-# URL de tu FastAPI
-API_URL = "http://localhost:8000/ultimo"
-
-# Cada cuántos segundos consultar
-DELAY = 10
+# Tiempo entre pruebas
+DELAY = 3
 
 # =========================================
 
@@ -29,30 +25,32 @@ time.sleep(2)
 
 print("Arduino conectado")
 
+# =========================================
+# DATOS SIMULADOS
+# =========================================
+
+datos_simulados = [
+    2,
+    4,
+    7,
+    9,
+    12,
+    15,
+    3,
+    1,
+    11
+]
+
+# =========================================
 
 while True:
 
-    try:
+    for personas in datos_simulados:
 
-        # Obtener datos del backend
-        response = requests.get(API_URL)
+        print(f"\nEnviando: {personas} personas")
 
-        data = response.json()
-
-        personas = data.get("people_count_all", 0)
-
-        print(f"Personas detectadas: {personas}")
-
-        # Enviar dato al Arduino
         mensaje = f"{personas}\n"
 
         arduino.write(mensaje.encode())
 
-        print(f"Enviado al Arduino: {mensaje}")
-
-    except Exception as e:
-
-        print("ERROR:")
-        print(e)
-
-    time.sleep(DELAY)
+        time.sleep(DELAY)
